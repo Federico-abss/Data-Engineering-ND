@@ -27,3 +27,7 @@ The project template includes one Jupyter Notebook file, in which:
 - you will model the data tables keeping in mind the queries you need to run,
 - you have been provided queries that you will need to model your data tables for,
 - you will load the data into tables you create in Apache Cassandra and run your queries.
+
+A sample few rows of the csv file that will be created for querying:
+
+![csv dataset](images/image_event_datafile_new.jpg)
