@@ -1,4 +1,4 @@
-#Project: Data Modeling with Cassandra
+# Project: Data Modeling with Cassandra
 
 A startup called Sparkify wants to analyze the data they've been collecting on songs and user activity on their new music streaming app. The analysis team is particularly interested in understanding what songs users are listening to. Currently, there is no easy way to query the data to generate the results, since the data reside in a directory of CSV files on user activity on the app.
 
@@ -23,7 +23,7 @@ To get started with the project, go to the workspace on the next page, where you
 
 The project template includes one Jupyter Notebook file, in which:
 
-you will process the `event_datafile_new.csv` dataset to create a denormalized dataset
-you will model the data tables keeping in mind the queries you need to run
-you have been provided queries that you will need to model your data tables for
-you will load the data into tables you create in Apache Cassandra and run your queries
+- you will process the `event_datafile_new.csv` dataset to create a denormalized dataset
+- you will model the data tables keeping in mind the queries you need to run
+- you have been provided queries that you will need to model your data tables for
+- you will load the data into tables you create in Apache Cassandra and run your queries
