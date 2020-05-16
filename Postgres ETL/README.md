@@ -106,4 +106,5 @@ python etl.py
 You will be shown the progress of the pipeline in the command line and you can also use the `test.ipynb` notebook to verify that each step was executed successfully.  
 
 Here five rows of the songplays table as a preview of the final output:
+
 ![songplays table](songplays.png)
