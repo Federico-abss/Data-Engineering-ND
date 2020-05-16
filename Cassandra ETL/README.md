@@ -23,7 +23,7 @@ To get started with the project, go to the workspace on the next page, where you
 
 The project template includes one Jupyter Notebook file, in which:
 
-- you will process the `event_datafile_new.csv` dataset to create a denormalized dataset
-- you will model the data tables keeping in mind the queries you need to run
-- you have been provided queries that you will need to model your data tables for
-- you will load the data into tables you create in Apache Cassandra and run your queries
+- you will process the `event_datafile_new.csv` dataset to create a denormalized dataset,
+- you will model the data tables keeping in mind the queries you need to run,
+- you have been provided queries that you will need to model your data tables for,
+- you will load the data into tables you create in Apache Cassandra and run your queries.
