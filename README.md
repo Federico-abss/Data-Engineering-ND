@@ -6,7 +6,7 @@ Learn to design data models, build data warehouses and data lakes, automate data
 
 Learn to create relational and NoSQL data models to fit the diverse needs of data consumers. Use ETL to build databases in PostgreSQL and Apache Cassandra.
 
-[- Data Modeling With Postgres](/Postgres%20ETL)
+[- Data Modeling With Postgres](/Postgres%20ETL)  
 [- Data Modeling with Apache Cassandra](/Cassandra%20ETL/)
 
 ### Cloud Data Warehouses
@@ -30,3 +30,5 @@ Schedule, automate, and monitor data pipelines using Apache Airflow. Run data qu
 ### Capstone Project
 
 Combine what you've learned throughout the program to build your own data engineering portfolio project.
+
+- Capstone Project
