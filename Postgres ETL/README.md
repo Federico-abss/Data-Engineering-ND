@@ -37,7 +37,7 @@ Files used on the project:
 
 1. `data` is the folder where all needed jsons reside.
 1. `create_tables.py` drops and creates your tables. You run this file to reset your tables before each time you run your ETL scripts.
-1. `sql_queries.py` contains all your sql queries, and is imported into the files bellow.
+1. `sql_queries.py` contains all your sql queries, and is imported into the files below.
 1. `test.ipynb` displays the first few rows of each table to let you check your database.
 1. `etl.ipynb` reads and processes a single file from song_data and log_data and loads the data into your 1. tables.
 1. `etl.py` reads and processes files from song_data and log_data and loads them into your tables.
