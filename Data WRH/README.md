@@ -46,8 +46,8 @@ Files used on the project:
 I processed the info contained in the S3 bucket into staging tables that I later used to create the main database.
 
 #### Staging Tables
-- staging_events: contains all the fields and rows from the log jsons.
-- staging_songs: contains all the fields and rows from the songs jsons.
+- ***staging_events***: contains all the fields and rows from the logs jsons.
+- ***staging_songs***: contains all the fields and rows from the songs jsons.
 
 Using the songs and events staging tables, I created a star schema database optimized for queries on song play analysis, which is composed of the following tables.
 
