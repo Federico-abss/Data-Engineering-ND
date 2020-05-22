@@ -110,7 +110,7 @@ Before running the project it's necessary creating the tables by running the cre
 
 To execute the pipeline we need to establish a connection to AWS, to make the code reusable and protect my credentials I used Airflow's admin page to create custom connections that store my private informations as well as the connection details.
 
-This what the dag looks like from the airflow UI:
+This what the dag looks like from the airflow UI, keep reading for a description of the operators groups:
 ![dag](example-dag.png)
 
 ### Operators
@@ -118,11 +118,11 @@ Operators create necessary tables, stage the data, transform the data, and run c
 Connections and Hooks are configured using Airflow's built-in functionalities.  
 All of the operators and task run SQL statements against the Redshift database.  
 
-#### Stage Operator
+#### Stage Operators
 
 The stage operator loads any JSON and CSV formatted files from S3 to Amazon Redshift. The operator creates and runs a SQL COPY statement based on the parameters provided. The operator's parameters should specify where in S3 the file is loaded and what is the target table.
 
-#### Fact and Dimension Operators
+#### Fact and Dimension Load Operators
 
 The dimension and fact operators make use of the SQL helper class to run data transformations. Operators take as input the SQL statement from the helper class and target the database on which to run the query against. A target table is also defined that contains the results of the transformation.
 
@@ -132,3 +132,7 @@ The data quality operator is used to run checks on the data itself. The operator
 
 For example one test could be a SQL statement that checks if certain column contains NULL values by counting all the rows that have NULL in the column. We do not want to have any NULLs so expected result would be 0 and the test would compare the SQL statement's outcome to the expected result.
 The tests are not hardcoded, the user can create any condition and query to test the tables against by compiling the operator with the proper arguments.
+
+#### Begin and End Operators
+
+They don't actually perform any real task, they serve to enhance the visual representation of the dag in the airflow UI and define a clear boundary of its execution.
