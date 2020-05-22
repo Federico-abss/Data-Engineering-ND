@@ -131,7 +131,7 @@ The dimension and fact operators make use of the SQL helper class to run data tr
 
 The data quality operator is used to run checks on the data itself. The operator's main functionality is to receive one or more SQL based test cases along with the expected results and execute the tests. For each the test, the test result and expected result are checked and if there is no match, the operator raises an exception and the task is retried until it fails eventually.
 
-For example one test could be a SQL statement that checks if certain column contains NULL values by counting all the rows that have NULL in the column. We do not want to have any NULLs so expected result would be 0 and the test would compare the SQL statement's outcome to the expected result.
+For example one test could be a SQL statement that checks if certain column contains NULL values by counting all the rows that have NULL in the column. We do not want to have any NULLs so expected result would be 0 and the test would compare the SQL statement's outcome to the expected result.  
 The tests are not hardcoded, the user can create any condition and query to test the tables against by compiling the operator with the proper arguments.
 
 #### Begin and End Operators
