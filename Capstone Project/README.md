@@ -22,12 +22,12 @@ DEST_AIRPORT_ID, DEST_AIRPORT_SEQ_ID,DEST_CITY_MARKET_ID,DEST,CRS_DEP_TIME, DEP_
 WHEELS_ON,TAXI_IN,CRS_ARR_TIME,ARR_TIME,ARR_DELAY,CANCELLED,CANCELLATION_CODE,DIVERTED,DISTANCE
 ```
 
-To make it suitable for analysis it needs a specific time format that presents date and time in the same column and a consistent timezone, right now date and time are separated into the FL_DATE and DEP_TIME, and there is no time zone offset associated with the departure time, meaning a departure time of 1406 in different rows can be different times depending on the time zone of the origin airport.
+To make it suitable for analysis it needs a specific time format that presents date and time in the same column and a consistent timezone, right now date and time are separated into the FL_DATE and DEP_TIME, and there is no time zone offset associated with the time, meaning a departure time of 1406 in different rows can be different times depending on the time zone of the origin airport.
 
-The time zone offsets, one for the origin airport and another for the destination, are not present in the data, this means I need a different dataset that contains the timezone offset of each airport and use it to clean my data.  
-Not having any available I will use the airport informations, also provided by BTS, as well as the timezonefinder library, that uses longitude and latitude to determine the timezone.
+The time zone offsets, one for the origin airport and another for the destination, are not present in the data, which means I need a different dataset that contains the timezone offset of each airport to clean my data.  
+Not having any available I will use the airport informations, also provided by BTS, as well as the timezonefinder library, that uses longitude and latitude to determine the timezone, to create the necessary informations.
 
-Another step necessary to allow more complex comparative queries is using the informations presents about departures, wheels off and arrival to create three final rows for each original row except canceled flights.
+Another step necessary to allow more complex comparative queries is using the informations presents about departures, wheels off and arrival (DEP_TIME, WHEELS_OFF, ARR_TIME) to create three final rows for each original row except canceled flights.
 
 ## Step 3: Define the Data Model
 
@@ -48,7 +48,7 @@ The file `bqschema.txt` was used during the creation of the table to enforce thi
 
 ## Step 4: Run ETL to Model the Data
 
-Overview of the overall pipeline
+Visualization of the overall process on a component level:
 
 ![ETL overview](/Capstone%20Project/images/csv_file_to_bigquery.png)
 
@@ -58,18 +58,13 @@ Here is the pipeline as shown in the Dataflow UI:
 
 The file `etl.py` contains every function used in the pipeline and is responsible for triggering its execution.
 
-Unit test to check if data is consistent, changing timezones might affect dates and generate inconsistencies, in that case we are gonna add 24 hours The 24-hour hack is called just before the yield in
-tz_correct
-. Now that we have new data aboutthe airports, it is probably wise to add it to our dataset. Also, as remarked earlier, we want to keeptrack of the time zone offset from UTC because some types of analysis might require knowledge of thelocal time. Thus, the new
-tz_correct code becomes the following
- 
-After we have our time-corrected data, we can move on to creating events. We’ll limit ourselves for now to just the
-departed
- and
-arrived
- messages—we can rerun the pipeline to create the additionalevents if and when our modeling efforts begin to use other events
+The data needs to respect the schema to be loaded in the final destination, one of the test checks for data consistencies controls if changing timezones affected dates and caused the arrival time to be lower than departure, in that case it add 24 hours to the time column to fix the issue, and another ensures the row is not empty before writing it in BigQuery.
 
 ## Step 5: Complete Project Write Up
+
+Now that the data is in the warehouse the analytics team has easy access to it, you can query in place and leverage the automatic optimizations and computational power of BigQuery, as well as use integrated tools like DataStudio or Qlik to create dashboards and presentations.
+
+An example of a basic query run directly inside BigQuery: 
 
 ```
 SELECT EVENT, NOTIFY_TIME, EVENT_DATAFROM `flights.events`
@@ -78,7 +73,22 @@ ORDER BY NOTIFY_TIME ASC LIMIT 10;
 ```
 ![Query Output](/Capstone%20Project/images/query.png)
 
+#### About the tools I used
+
+This project could have been realized with S3 ingestion point, Airflow to build the pipeline and Redshift for the warehouse, but I wanted to leverage the knowledge I have about Google Cloud and try my hand at making this project completely serverless, which was allowed by the technologies I chose.  
+
+The only things I needed to do to set up the infrastructure (outside of writing the python code) were:
+1. Creating the storage bucket I used for ingestion.
+2. Creating the BigQuery dataset and the destination table
+3. Activating the Dataflow api and then running `etl.py` in the cloud shell terminal inside a python venv containing the necessary dependencies (Apache Beam and and timezonefinder).
+
+Dataflow takes care of creating worker nodes and requesting more resources in case of bigger workloads, and automatically shuts down when the job is finished, similarly storage and BigQuery can scale very high without any intervention of the user.
+
 #### Possible Scenarios
 ***If the data was increased by 100x*** - The pipeline has autoscaling enabled, this makes so that a reasonably bigger amount of data can be processed without many concerns outside computation and storage costs.  
 ***If the pipelines were run on a daily basis by 7am*** - If for example you need to process data on a daily base, you would need to create a new destination table or modify the dataflow job to append instead of truncating.  
-***If the database needed to be accessed by 100+ people*** - BigQuery allows any user with the right authorizations to query the dataset, you can also cache the results of previous queries or create custom views from the most frequent queries to reduce BQ costs.  
+***If the database needed to be accessed by 100+ people*** - BigQuery allows any user with the right authorizations to query the dataset, you can also cache the results of previous queries or create custom views from the most frequent queries to reduce BQ costs. 
+
+#### Sources
+
+I used the book [Data Science On Google Cloud](http://shop.oreilly.com/product/0636920057628.do) and the Google Cloud official tutorials during the execution of this project.
