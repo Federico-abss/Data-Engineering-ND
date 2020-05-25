@@ -1,33 +1,32 @@
 # Project: ETL transformations in Google Cloud
 
-Flows Airline needs to analyze the historical data of their flights to identify possible causes of delays and improve the service offered to their costumers. As the new data Engineer of the company
-I was tasked with building an etl pipeline that extracts the historical data of the flights, transforms it in a way that helps business analysts and load it in a data warehouse that makes easy querying 
-for information and the construction of analytics dashboards. 
-
-Cloud Dataflow is basically serverless Apache Beam, as it allows you to reuse your Beam pipeline infrastructure and create templates for other people to reutilize easily
+Flows Airline needs to analyze the historical data of their flights to identify possible causes of delays and improve the service offered to their costumers. As the new data Engineer of the company I was tasked with building an etl pipeline that extracts the historical data of the flights, transforms it in a way that allows business analysts to obtain the desired insights and load it in a data warehouse that makes querying for informations and constructing analytics dashboards easy. 
 
 ### Step 1: Scope the Project and Gather Data
 
 The original data is taken from the [Bureau of Transportation Statistics](https://www.transtats.bts.gov/airports.asp), specifically the dataset I am using consists of two months of airports data, 
 covering around one million flights that took place between Jan 1 2015 and Feb 28 2015.
 
-The scope of the project is cleaning the data and transport it to BigQuery to make it available for analytical purposes to the other teams of the organization.
+![Flights dataset](/Capstone%20Project/images/flights_data.png)
+
+The aim of the project is cleaning the data and transporting it to BigQuery to make it available for analytical purposes to the rest of  the organization.
 
 ### Step 2: Explore and Assess the Data
 
-The data is in csv
+The original dataset is in csv format and presents this schema:
 
 ```
-FL_DATE,UNIQUE_CARRIER,AIRLINE_ID,CARRIER,FL_NUM,ORIGIN_AIRPORT_ID,ORIGIN_AIRPORT_SEQ_ID,ORIGIN_CITY_MARKET_ID,ORIGIN,DEST_AIRPORT_ID,DEST_AIRPORT_SEQ_ID,DEST_CITY_MARKET_ID,DEST,CRS_DEP_TIME,
-DEP_TIME,DEP_DELAY,TAXI_OUT,WHEELS_OFF,WHEELS_ON,TAXI_IN,CRS_ARR_TIME,ARR_TIME,ARR_DELAY,CANCELLED,CANCELLATION_CODE,DIVERTED,DISTANCE
+FL_DATE,UNIQUE_CARRIER,AIRLINE_ID,CARRIER,FL_NUM,ORIGIN_AIRPORT_ID,ORIGIN_AIRPORT_SEQ_ID,ORIGIN_CITY_MARKET_ID,ORIGIN,  
+DEST_AIRPORT_ID, DEST_AIRPORT_SEQ_ID,DEST_CITY_MARKET_ID,DEST,CRS_DEP_TIME, DEP_TIME,DEP_DELAY,TAXI_OUT,WHEELS_OFF,
+WHEELS_ON,TAXI_IN,CRS_ARR_TIME,ARR_TIME,ARR_DELAY,CANCELLED,CANCELLATION_CODE,DIVERTED,DISTANCE
 ```
 
-Outside of date and time being separated into the FL_DATE and DEP_TIME, I will need to join them in a single column, there is no time zone offset associated with the departure time. 
-Thus, in this dataset, a departure time of 1406 in different rows can be different times depending on the time zone of the origin airport.
-The time zone offsets (there are two, one for the origin airport and another for the destination) are not present in the data. Because the offset depends on the airport location, I need to to use dataset that
-contains the timezone offset of each airport and use it to clean my data, for that I will use the airport informations, still from BTS. pip install timezonefinder pytz
+To make it suitable for analysis it needs a specific time format that presents date and time in the same column and a consistent timezone, right now date and time are separated into the FL_DATE and DEP_TIME, and there is no time zone offset associated with the departure time, meaning a departure time of 1406 in different rows can be different times depending on the time zone of the origin airport.
 
-For the analysis operations to be performed as intended it is also necessary to create events out of the every flight row, 3 events for each except the canceled ones.
+The time zone offsets, one for the origin airport and another for the destination, are not present in the data, this means I need a different dataset that contains the timezone offset of each airport and use it to clean my data.  
+Not having any available I will use the airport informations, also provided by BTS, as well as the timezonefinder library, that uses longitude and latitude to determine the timezone.
+
+Another step necessary to allow more complex comparative queries is using the informations presents about departures, wheels off and arrival to create three final rows for each original row except canceled flights.
 
 ### Step 3: Define the Data Model
 
@@ -39,6 +38,8 @@ Arrived All fields available in wheelson message, plus:ARR_TIME,ARR_DELAY
 
 pipeline steps
 
+![dataflow pipeline](/Capstone%20Project/images/dataflow_pipeline.png)
+
 1. Data ingestion - Upload the historical data and the airport informations to Cloud Storage
 2. Data transformation 
 	- Convert dataset to a common timezone
@@ -47,11 +48,13 @@ pipeline steps
 3. Use BigQuery as a data warehouse to store the events in a database and perform query/create analytics on.
 `bq mk --project_id $PROJECT_ID flights`
 
-BQ schema 
+BigQuery schema 
 
-EVENT:string,NOTIFY_TIME:timestamp,EVENT_DATA:string,FL_DATE:date,UNIQUE_CARRIER:string,AIRLINE_ID:string,CARRIER:string,FL_NUM:string,ORIGIN_AIRPORT_ID:string,ORIGIN_AIRPORT_SEQ_ID:integer,ORIGIN_CITY_MARKET_ID:string,ORIGIN:string,DEST_AIRPORT_ID:string,DEST_AIRPORT_SEQ_ID:integer,DEST_CITY_MARKET_ID:string,DEST:string,CRS_DEP_TIME:timestamp,DEP_TIME:timestamp,DEP_DELAY:float,TAXI_OUT:float,WHEELS_OFF:timestamp,WHEELS_ON:timestamp,TAXI_IN:float,CRS_ARR_TIME:timestamp,ARR_TIME:timestamp,ARR_DELAY:float,CANCELLED:string,CANCELLATION_CODE:string,DIVERTED:string,DISTANCE:float,DEP_AIRPORT_LAT:float,DEP_AIRPORT_LON:float,DEP_AIRPORT_TZOFFSET:float,ARR_AIRPORT_LAT:float,ARR_AIRPORT_LON:float,ARR_AIRPORT_TZOFFSET:float
+![BQ schema](/Capstone%20Project/images/BQ_schema_full.jpg)
 
 ### Step 4: Run ETL to Model the Data
+
+![ETL overview](/Capstone%20Project/images/csv_file_to_bigquery.png)
 
 Unit test to check if data is consistent, changing timezones might affect dates and generate inconsistencies, in that case we are gonna add 24 hours The 24-hour hack is called just before the yield in
 tz_correct
@@ -67,7 +70,12 @@ arrived
 
 ### Step 5: Complete Project Write Up
 
-SELECT EVENT, NOTIFY_TIME, EVENT_DATAFROM `cloud-training-demos.flights.simevents`WHERE NOTIFY_TIME >= TIMESTAMP('2015-05-01 00:00:00 UTC') AND NOTIFY_TIME < TIMESTAMP('2015-05-03 00:00:00 UTC')ORDER BY NOTIFY_TIME ASCLIMIT 10
+```
+SELECT EVENT, NOTIFY_TIME, EVENT_DATAFROM `flights.events`
+WHERE NOTIFY_TIME >= TIMESTAMP('2015-05-01 00:00:00 UTC') AND NOTIFY_TIME < TIMESTAMP('2015-05-03 00:00:00 UTC')
+ORDER BY NOTIFY_TIME ASC LIMIT 10;
+```
+![Query Output](/Capstone%20Project/images/query.png)
 
 scenarios:
 If the data was increased by 100x - the pipeline has autoscaling enabled, this makes so that any amount of data can be processed without many concerns outside computation and storage costs.
