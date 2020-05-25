@@ -1,6 +1,7 @@
 # Project: ETL transformations in Google Cloud
 
-Flows Airline needs to analyze the historical data of their flights to identify possible causes of delays and improve the service offered to their costumers. As the new data Engineer of the company I was tasked with building an etl pipeline that extracts the historical data of the flights, transforms it in a way that allows business analysts to obtain the desired insights and load it in a data warehouse that makes querying for informations and constructing analytics dashboards easy. 
+Flows Airline needs to analyze the historical data of their flights to identify possible causes of delays and improve the service offered to their costumers.  
+As the new data Engineer of the company I was tasked with building an etl pipeline that extracts the historical data of the flights, transforms it in a way that allows business analysts to obtain the desired insights and load it in a data warehouse that makes querying for informations and constructing analytics dashboards easy. 
 
 ## Step 1: Scope the Project and Gather Data
 
@@ -51,7 +52,7 @@ Overview of the overall pipeline
 
 ![ETL overview](/Capstone%20Project/images/csv_file_to_bigquery.png)
 
-Here is what the pipeline as shown in the Dataflow UI:
+Here is the pipeline as shown in the Dataflow UI:
 
 ![dataflow pipeline](/Capstone%20Project/images/dataflow_pipeline.png)
 
