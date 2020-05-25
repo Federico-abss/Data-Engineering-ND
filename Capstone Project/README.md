@@ -2,7 +2,7 @@
 
 Flows Airline needs to analyze the historical data of their flights to identify possible causes of delays and improve the service offered to their costumers. As the new data Engineer of the company I was tasked with building an etl pipeline that extracts the historical data of the flights, transforms it in a way that allows business analysts to obtain the desired insights and load it in a data warehouse that makes querying for informations and constructing analytics dashboards easy. 
 
-### Step 1: Scope the Project and Gather Data
+## Step 1: Scope the Project and Gather Data
 
 The original data is taken from the [Bureau of Transportation Statistics](https://www.transtats.bts.gov/airports.asp), specifically the dataset I am using consists of two months of airports data, 
 covering around one million flights that took place between Jan 1 2015 and Feb 28 2015.
@@ -11,7 +11,7 @@ covering around one million flights that took place between Jan 1 2015 and Feb 2
 
 The aim of the project is cleaning the data and transporting it to BigQuery to make it available for analytical purposes to the rest of  the organization.
 
-### Step 2: Explore and Assess the Data
+## Step 2: Explore and Assess the Data
 
 The original dataset is in csv format and presents this schema:
 
@@ -28,39 +28,39 @@ Not having any available I will use the airport informations, also provided by B
 
 Another step necessary to allow more complex comparative queries is using the informations presents about departures, wheels off and arrival to create three final rows for each original row except canceled flights.
 
-### Step 3: Define the Data Model
+## Step 3: Define the Data Model
 
-Departed All fields available in scheduled message, plus:DEP_TIME,DEP_DELAYCANCELLED,CANCELLATION_CODEDEP_AIRPORT_LAT,DEP_AIRPORT_LON,DEP_AIRPORT_TZOFFSET
+The final schema is very similar to the original one, with exception of having time and date under the same column, and three extra 
+columns representing event data like arrival or departure.
 
-wheels off All fields available in departed message, plus:TAXI_OUT,WHEELS_OFF
-
-Arrived All fields available in wheelson message, plus:ARR_TIME,ARR_DELAY
-
-pipeline steps
-
-![dataflow pipeline](/Capstone%20Project/images/dataflow_pipeline.png)
-
-1. Data ingestion - Upload the historical data and the airport informations to Cloud Storage
-2. Data transformation 
-	- Convert dataset to a common timezone
-	- Add timezone offset to the schema
-	- Create flight events
-3. Use BigQuery as a data warehouse to store the events in a database and perform query/create analytics on.
-`bq mk --project_id $PROJECT_ID flights`
-
-BigQuery schema 
+This is what the schema looks like from the BigQuery UI:
 
 ![BQ schema](/Capstone%20Project/images/BQ_schema_full.jpg)
 
-### Step 4: Run ETL to Model the Data
+The file `bqschema.txt` was used during the creation of the table to enforce this schema and can be reused for creating new ones.
+
+* A short overview of the processes involved in creating the final dataset:
+	- Add timezone offset to the schema of airport informations
+	- Convert flights dataset to a common timezone using the airports data
+	- Unite date and time informations under the same column
+	- Create events data
+
+## Step 4: Run ETL to Model the Data
+
+Overview of the overall pipeline
 
 ![ETL overview](/Capstone%20Project/images/csv_file_to_bigquery.png)
+
+Here is what the pipeline as shown in the Dataflow UI:
+
+![dataflow pipeline](/Capstone%20Project/images/dataflow_pipeline.png)
+
+The file `etl.py` contains every function used in the pipeline and is responsible for triggering its execution.
 
 Unit test to check if data is consistent, changing timezones might affect dates and generate inconsistencies, in that case we are gonna add 24 hours The 24-hour hack is called just before the yield in
 tz_correct
 . Now that we have new data aboutthe airports, it is probably wise to add it to our dataset. Also, as remarked earlier, we want to keeptrack of the time zone offset from UTC because some types of analysis might require knowledge of thelocal time. Thus, the new
-tz_correct
- code becomes the following
+tz_correct code becomes the following
  
 After we have our time-corrected data, we can move on to creating events. We’ll limit ourselves for now to just the
 departed
@@ -68,7 +68,7 @@ departed
 arrived
  messages—we can rerun the pipeline to create the additionalevents if and when our modeling efforts begin to use other events
 
-### Step 5: Complete Project Write Up
+## Step 5: Complete Project Write Up
 
 ```
 SELECT EVENT, NOTIFY_TIME, EVENT_DATAFROM `flights.events`
@@ -77,7 +77,7 @@ ORDER BY NOTIFY_TIME ASC LIMIT 10;
 ```
 ![Query Output](/Capstone%20Project/images/query.png)
 
-scenarios:
-If the data was increased by 100x - the pipeline has autoscaling enabled, this makes so that any amount of data can be processed without many concerns outside computation and storage costs.
-If the pipelines were run on a daily basis by 7am - It's as simple as writing a script or a cron job to trigger the pipeline daily, to ingest the info from the previous day.
-If the database needed to be accessed by 100+ people - BigQuery allows any user with the right authorizations to query the dataset, you can also cache the results of previous queries or create view only tables to reduce the querying costs.
+#### Possible Scenarios
+***If the data was increased by 100x*** - The pipeline has autoscaling enabled, this makes so that a reasonably bigger amount of data can be processed without many concerns outside computation and storage costs.  
+***If the pipelines were run on a daily basis by 7am*** - If for example you need to process data on a daily base, you would need to create a new destination table or modify the dataflow job to append instead of truncating.  
+***If the database needed to be accessed by 100+ people*** - BigQuery allows any user with the right authorizations to query the dataset, you can also cache the results of previous queries or create custom views from the most frequent queries to reduce BQ costs.  
