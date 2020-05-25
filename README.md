@@ -31,4 +31,4 @@ Schedule, automate, and monitor data pipelines using Apache Airflow. Run data qu
 
 Combine what you've learned throughout the program to build your own data engineering portfolio project.
 
-- Capstone Project
+[- Capstone Project](/Capstone%20Project)
