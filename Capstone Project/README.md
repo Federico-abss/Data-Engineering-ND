@@ -82,7 +82,7 @@ The only things I needed to do to set up the infrastructure (outside of writing 
 2. Creating the BigQuery dataset and the destination table
 3. Activating the Dataflow api and then running `etl.py` in the cloud shell terminal inside a python venv containing the necessary dependencies (Apache Beam and and timezonefinder).
 
-Dataflow takes care of creating worker nodes and requesting more resources in case of bigger workloads, and automatically shuts down when the job is finished, similarly storage and BigQuery can scale very high without any intervention of the user.
+Dataflow takes care of creating worker nodes and requesting more resources in case of bigger workloads, and automatically shuts down when the job is finished, similarly Storage and BigQuery can scale without any intervention of the user.
 
 #### Possible Scenarios
 ***If the data was increased by 100x*** - The pipeline has autoscaling enabled, this makes so that a reasonably bigger amount of data can be processed without many concerns outside computation and storage costs.  
